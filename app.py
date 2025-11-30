@@ -5,15 +5,15 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # --- 页面配置 ---
-st.set_page_config(page_title="AI 投资小助手", layout="wide")
+st.set_page_config(page_title="AI Investment Assistant", layout="wide")
 
-st.title("🤖 AI 智能投顾助手 (AI Investment Assistant)")
-st.markdown("基于 **现代投资组合理论 (MPT)** 与 **动量策略** 的自动化分析系统")
+st.title("🤖 AI Investment Assistant")
+st.markdown("Automated Analysis System based on **Modern Portfolio Theory (MPT)** and **Momentum Strategy**")
 
 # --- 侧边栏：用户输入 ---
-st.sidebar.header("⚙️ 投资组合设置")
-user_tickers = st.sidebar.text_input("输入 ETF 代码 (用逗号分隔)", "QQQ, VGT, SPMO, GLD")
-period = st.sidebar.selectbox("分析时间范围", ["1y", "2y", "5y", "ytd"], index=0)
+st.sidebar.header("⚙️ Portfolio Settings")
+user_tickers = st.sidebar.text_input("Enter ETF Tickers (comma separated)", "QQQ, VGT, SPMO, GLD")
+period = st.sidebar.selectbox("Analysis Time Period", ["1y", "2y", "5y", "ytd"], index=0)
 
 # 解析用户输入的代码
 tickers = [t.strip().upper() for t in user_tickers.split(",")]
@@ -28,23 +28,23 @@ def get_data(tickers, period):
     return data
 
 # --- 主逻辑 ---
-if st.sidebar.button("🚀 开始分析"):
-    with st.spinner('正在拉取华尔街数据...'):
+if st.sidebar.button("🚀 Start Analysis"):
+    with st.spinner('Fetching Wall Street Data...'):
         try:
             # 1. 获取数据
             df = get_data(tickers, period)
             
             # 检查数据有效性
             if df.empty:
-                st.error("无法获取数据，请检查代码拼写！")
+                st.error("Unable to fetch data. Please check ticker spelling!")
             else:
                 # 2. 展示基础走势
-                st.subheader("📈 历史价格走势 (归一化)")
+                st.subheader("📈 Historical Price Trend (Normalized)")
                 normalized_df = df / df.iloc[0]
                 st.line_chart(normalized_df)
 
                 # --- [新增功能] 智能择时信号 (RSI Analysis) ---
-                st.subheader("🚦 市场温度计 (RSI Timing)")
+                st.subheader("🚦 Market Thermometer (RSI Timing)")
                 
                 # 计算 RSI 的简单函数
                 def calculate_rsi(data, window=14):
@@ -65,12 +65,12 @@ if st.sidebar.button("🚀 开始分析"):
                     
                     # 判断信号颜色和文字
                     if rsi_val > 70:
-                        status = "🔥 过热 (Overbought)"
+                        status = "🔥 Overbought"
                         color = "normal" # Streamlit metric 红色可以用 inverse，但这里我们简单处理
                     elif rsi_val < 30:
-                        status = "💰 捡漏机会 (Oversold)"
+                        status = "💰 Oversold (Buy Opportunity)"
                     else:
-                        status = "⚖️ 正常波动"
+                        status = "⚖️ Normal"
                     
                     with cols[idx]:
                         st.metric(
@@ -80,10 +80,8 @@ if st.sidebar.button("🚀 开始分析"):
                             delta_color="inverse" if rsi_val > 70 else "normal"
                         )
                 
-                st.info("💡 小贴士: RSI 低于 30 通常意味着短期被'错杀'，可能是补仓的好时机；高于 70 则意味着短期涨幅过大，要注意回调风险。")
+                st.info("💡 Tip: RSI below 30 often indicates 'oversold' conditions (potential buy); above 70 indicates 'overbought' (potential pullback risk).")
                 
-                # ... (下面的代码不用动) ...
-
                 # 3. 计算指标
                 daily_returns = df.pct_change().dropna()
                 mean_returns = daily_returns.mean() * 252
@@ -114,7 +112,7 @@ if st.sidebar.button("🚀 开始分析"):
                 col1, col2 = st.columns(2)
                 
                 with col1:
-                    st.subheader("🏆 AI 建议的最佳仓位")
+                    st.subheader("🏆 AI Recommended Optimal Allocation")
                     # 做一个漂亮的饼图
                     fig1, ax1 = plt.subplots()
                     ax1.pie(best_weights, labels=tickers, autopct='%1.1f%%', startangle=90)
@@ -122,13 +120,13 @@ if st.sidebar.button("🚀 开始分析"):
                     st.pyplot(fig1)
 
                 with col2:
-                    st.subheader("📊 预期表现 (年化)")
-                    st.metric("预期年化收益", f"{results[0, max_sharpe_idx]*100:.2f}%")
-                    st.metric("预期波动率 (风险)", f"{results[1, max_sharpe_idx]*100:.2f}%")
-                    st.metric("夏普比率 (Sharpe)", f"{results[2, max_sharpe_idx]:.2f}")
+                    st.subheader("📊 Expected Performance (Annualized)")
+                    st.metric("Expected Annual Return", f"{results[0, max_sharpe_idx]*100:.2f}%")
+                    st.metric("Expected Volatility (Risk)", f"{results[1, max_sharpe_idx]*100:.2f}%")
+                    st.metric("Sharpe Ratio", f"{results[2, max_sharpe_idx]:.2f}")
 
                 # 5. 有效前沿图
-                st.subheader("🎯 有效前沿 (Efficient Frontier)")
+                st.subheader("🎯 Efficient Frontier")
                 fig2, ax2 = plt.subplots(figsize=(10, 6))
                 sc = ax2.scatter(results[1,:], results[0,:], c=results[2,:], cmap='viridis', s=10, alpha=0.5)
                 plt.colorbar(sc, label='Sharpe Ratio')
@@ -138,15 +136,15 @@ if st.sidebar.button("🚀 开始分析"):
                 ax2.legend()
                 st.pyplot(fig2)
                 
-                st.success("分析完成！这就是数据科学的力量。")
+                st.success("Analysis Complete! This is the power of Data Science.")
                 
-# --- [新增功能] 蒙特卡洛未来财富模拟 ---
+                # --- [新增功能] 蒙特卡洛未来财富模拟 ---
                 st.markdown("---")
-                st.subheader("🔮 水晶球：未来 1 年资产推演")
+                st.subheader("🔮 Crystal Ball: 1-Year Asset Projection")
                 
                 # 假设我们投资 10,000 美元
                 initial_capital = 10000
-                st.info(f"假设当前投入资金: ${initial_capital:,.0f}，基于最佳仓位模拟未来走势...")
+                st.info(f"Assuming initial capital: ${initial_capital:,.0f}, simulating future trends based on optimal allocation...")
 
                 # 模拟参数
                 simulation_days = 252 # 一年
@@ -187,20 +185,20 @@ if st.sidebar.button("🚀 开始分析"):
                 
                 st.pyplot(fig3)
                 
-                st.warning(f"注：这是基于概率的数学模拟。最坏情况下，你的资产可能跌至 ${simulation_df.iloc[-1].min():,.0f}，最好情况下可能达到 ${simulation_df.iloc[-1].max():,.0f}。")
+                st.warning(f"Note: This is a probabilistic simulation. Worst case: ${simulation_df.iloc[-1].min():,.0f}, Best case: ${simulation_df.iloc[-1].max():,.0f}.")
             
                 # --- [新增功能] 智能建仓计算器 ---
                 st.markdown("---")
-                st.subheader("🛒 智能建仓计算器 (Position Sizing)")
+                st.subheader("🛒 Smart Position Sizing Calculator")
 
                 col_input, col_calc = st.columns([1, 2])
                 
                 with col_input:
                     # 让用户输入想投资的金额
-                    total_investment = st.number_input("💰 请输入你的总投资金额 ($):", min_value=1000, value=10000, step=500)
+                    total_investment = st.number_input("💰 Enter Total Investment Amount ($):", min_value=1000, value=10000, step=500)
                 
                 with col_calc:
-                    st.write(f"基于当前最佳配置，${total_investment:,.2f} 的购买清单如下：")
+                    st.write(f"Based on optimal allocation, buying list for ${total_investment:,.2f}:")
                     
                     # 获取最新价格
                     latest_prices = df.iloc[-1]
@@ -221,11 +219,11 @@ if st.sidebar.button("🚀 开始分析"):
                         # 只有当需要买至少1股时才显示
                         if shares > 0:
                             plan.append({
-                                "代码 (Ticker)": ticker,
-                                "建议仓位": f"{weight*100:.1f}%",
-                                "最新股价": f"${price:.2f}",
-                                "应买股数": shares,
-                                "预计花费": f"${cost:.2f}"
+                                "Ticker": ticker,
+                                "Target Allocation": f"{weight*100:.1f}%",
+                                "Latest Price": f"${price:.2f}",
+                                "Shares to Buy": shares,
+                                "Est. Cost": f"${cost:.2f}"
                             })
                             cash_remaining -= cost
                     
@@ -235,11 +233,11 @@ if st.sidebar.button("🚀 开始分析"):
                         st.table(plan_df)
                         
                         # 展示剩下的零钱
-                        st.success(f"✅ 执行此计划后，你还会剩余现金: ${cash_remaining:.2f}")
+                        st.success(f"✅ Cash remaining after execution: ${cash_remaining:.2f}")
                     else:
-                        st.warning("你的资金太少，无法按此比例购买任何一股股票！")
+                        st.warning("Capital too low to purchase any shares at this allocation!")
 
         except Exception as e:
-            st.error(f"发生错误: {e}")
+            st.error(f"Error occurred: {e}")
 else:
-    st.info("👈 请在左侧输入你想分析的 ETF，然后点击“开始分析”")
+    st.info("👈 Please enter ETFs on the left sidebar and click 'Start Analysis'")
